@@ -11,19 +11,21 @@ bx24 = Bitrix24(token)
 parser = argparse.ArgumentParser(description='Process file path')
 parser.add_argument('-i','--input', default='input.csv')
 parser.add_argument('-o','--output',default='error.csv')
-parser.add_argument('-lead','--mode')
+parser.add_argument('-l','--mode', action='store_true')
 args = parser.parse_args()
 dictionary={}
 columns=[]
+
 with open(args.input, newline='', encoding='utf-8') as csvfile:
-    reader = csv.reader(csvfile, delimiter=',')
+    reader = csv.reader(csvfile, delimiter=';')
     file=list(reader)
     columns=file[0]
     for row in file[1::]:
         dictionary[row[0]]={key: row[index] for key, index in zip(columns[1::],range(1,len(columns)))}
 print(dictionary)
 
-fields=bx24.callMethod('crm.deal.fields')
+fields=bx24.callMethod('crm.lead.fields') if args.mode is True else bx24.callMethod('crm.deal.fields') 
+print(fields)
 extractedFields={}
 for field, info in fields.items():
     if info!=None:
@@ -34,6 +36,8 @@ for field, info in fields.items():
             extractedFields[field]['title']=info['listLabel']
         else:
             extractedFields[field]['title']=info['title']
+        extractedFields[field]['isMultiple']=info['isMultiple']
+
 
 def convert(origin, template):
     result={}
@@ -45,8 +49,11 @@ def convert(origin, template):
     for id, fields in origin.items():
         result[id]={}
         for column, value in fields.items():
-            if 'values' in template[table[column]]:     
-                result[id][table[column]]=template[table[column]]['values'][value]
+            if 'values' in template[table[column]]:
+                if template[table[column]]['isMultiple']:     
+                    result[id][table[column]]=[template[table[column]]['values'][value]]
+                else:
+                    result[id][table[column]]=template[table[column]]['values'][value]
             else:
                 result[id][table[column]]=value
 
@@ -54,13 +61,15 @@ def convert(origin, template):
 
 errors={}
 
-for id, fields in convert(dictionary, extractedFields).items():
-    result=bx24.callMethod('crm.deal.update',id=id,fields=fields)
+converted=convert(dictionary, extractedFields)
+for id, fields in converted.items():
+    result=bx24.callMethod('crm.lead.update',id=id,fields=fields) if args.mode is True else bx24.callMethod('crm.deal.update',id=id,fields=fields) 
+    print(str(id) + ":" + str(result))
     if result is not True:
         errors[id]=dictionary[id]
 
 with open(args.output, 'w', newline='') as csvfile:
-    writer = csv.writer(csvfile, delimiter=',',
+    writer = csv.writer(csvfile, delimiter=';',
                             quotechar='"', quoting=csv.QUOTE_MINIMAL)
     writer.writerow(columns)
     for id, field in errors.items():
