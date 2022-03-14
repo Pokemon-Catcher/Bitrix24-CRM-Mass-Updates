@@ -1,0 +1,1 @@
+token = 'https://alfa-sale.bitrix24.ru/rest/28/6mgua2uhksj1n1ix/'
