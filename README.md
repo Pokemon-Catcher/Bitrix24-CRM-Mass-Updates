@@ -1,4 +1,4 @@
-# b24MassUpdates
+# Bitrix24 Mass Updates
  Mass Bitrix24 CRM updates using csv tables and Bitrix24 api
 
 Requirements:
