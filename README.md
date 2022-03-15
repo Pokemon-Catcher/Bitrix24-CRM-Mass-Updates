@@ -6,7 +6,7 @@
 - nbformat
 
 # How to use
-1. Create 'config.py' file and write bitrix24 token from https://example.bitrix24.ru/devops/section/standard/
+1. Create 'config.py' file and write bitrix24 token from https://example.bitrix24.ru/devops/section/standard/ in it
 2. Run main.py script, by default it uses "input.csv" file in the same directory and updates deals in Bitrix24
 
 # Options
