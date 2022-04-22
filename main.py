@@ -11,13 +11,14 @@ bx24 = Bitrix24(token)
 parser = argparse.ArgumentParser(description='Process file path')
 parser.add_argument('-i','--input', default='input.csv')
 parser.add_argument('-o','--output',default='error.csv')
+parser.add_argument('-d','--delimiter',default=';')
 parser.add_argument('-l','--mode', action='store_true')
 args = parser.parse_args()
 dictionary={}
 columns=[]
 
 with open(args.input, newline='', encoding='utf-8') as csvfile:
-    reader = csv.reader(csvfile, delimiter=';')
+    reader = csv.reader(csvfile, delimiter=args.delimiter)
     file=list(reader)
     columns=file[0]
     for row in file[1::]:
@@ -69,7 +70,7 @@ for id, fields in converted.items():
         errors[id]=dictionary[id]
 
 with open(args.output, 'w', newline='') as csvfile:
-    writer = csv.writer(csvfile, delimiter=';',
+    writer = csv.writer(csvfile, delimiter=args.delimiter,
                             quotechar='"', quoting=csv.QUOTE_MINIMAL)
     writer.writerow(columns)
     for id, field in errors.items():
